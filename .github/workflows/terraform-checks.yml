@@ -38,14 +38,11 @@ jobs:
         # Ensures consistency of Terraform version across all runs
 
       # Step 3: Configure AWS credentials
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        # Sets environment variables so Terraform can authenticate with AWS
-        # Uses GitHub Secrets to keep credentials safe
-        # This allows 'terraform plan' to run against your AWS account
+      - name: Set AWS Credentials
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+
 
       # Step 4: Initialize Terraform
       - name: Terraform Init
