@@ -1,66 +1,38 @@
-# -----------------------------
-# Name of the workflow
-# -----------------------------
 name: Terraform Checks
-# This is the display name in GitHub Actions UI for this workflow.
 
-# -----------------------------
-# Trigger conditions
-# -----------------------------
 on:
-  pull_request:           # Run this workflow when a Pull Request is created or updated
-    branches: [ "main" ] # Only trigger if the PR targets the 'main' branch
+  pull_request:
+    branches: [ "main" ]
 
-# -----------------------------
-# Define the jobs
-# -----------------------------
 jobs:
-  terraform-check:         # Job name, can be any descriptive name
-    runs-on: ubuntu-latest # Use GitHub-hosted Ubuntu VM as runner
+  terraform-check:
+    runs-on: ubuntu-latest
 
-    # -----------------------------
-    # Steps executed sequentially
-    # -----------------------------
     steps:
-
-      # Step 1: Checkout repository code
+      # Checkout repo
       - name: Checkout Code
         uses: actions/checkout@v3
-        # Pulls all code from the PR branch into the runner VM
-        # Without this, Terraform cannot see your .tf files or modules
 
-      # Step 2: Setup Terraform CLI
+      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.7
-        # Installs Terraform version 1.9.7 in the runner VM
-        # Ensures consistency of Terraform version across all runs
 
-      # Step 3: Configure AWS credentials
+      # Set AWS credentials as env vars
       - name: Set AWS Credentials
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
-
-      # Step 4: Initialize Terraform
+      # Terraform Init
       - name: Terraform Init
         run: terraform init
-        # Downloads provider plugins (AWS) and modules
-        # Prepares Terraform to run plan/validate/apply
-        # Must always run before other Terraform commands
 
-      # Step 5: Validate Terraform files
+      # Terraform Validate
       - name: Terraform Validate
         run: terraform validate
-        # Checks syntax and references in Terraform files
-        # Does NOT make any changes in AWS
-        # Ensures code is correct before planning or applying
 
-      # Step 6: Terraform Plan (Dry Run)
+      # Terraform Plan
       - name: Terraform Plan
         run: terraform plan
-        # Shows what Terraform will create, update, or destroy
-        # Output is visible in GitHub Actions logs
-        # Safe: does not apply changes
