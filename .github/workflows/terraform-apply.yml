@@ -1,13 +1,12 @@
 name: Terraform Apply via PR Comment
 
-# Trigger on PR comments
 on:
   issue_comment:
-    types: [created] # Only trigger on new comments
+    types: [created]
 
 jobs:
   terraform-apply:
-    # Only run if comment is on a PR and contains /apply
+    # Run only if comment is on a PR and contains "/apply"
     if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/apply')
     runs-on: ubuntu-latest
 
@@ -15,16 +14,14 @@ jobs:
       # Step 1: Checkout repository code
       - name: Checkout Code
         uses: actions/checkout@v3
-        # Pulls the PR branch code into the runner
 
       # Step 2: Setup Terraform CLI
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.7
-        # Ensures Terraform version consistency
 
-      # Step 3: Configure AWS credentials
+      # Step 3: Configure AWS credentials (environment vars)
       - name: Set AWS Credentials
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
@@ -33,10 +30,20 @@ jobs:
       # Step 4: Initialize Terraform
       - name: Terraform Init
         run: terraform init
-        # Prepares Terraform (downloads providers/modules)
 
       # Step 5: Terraform Apply
       - name: Terraform Apply
-        run: terraform apply -auto-approve
-        # Actually applies changes to AWS
-        # -auto-approve skips interactive approval
+        id: apply
+        run: terraform apply -auto-approve -no-color | tee apply_output.txt
+
+      # Step 6: Comment Apply Output in PR
+      - name: Comment Apply Output on PR
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            ### 🚀 Terraform Apply Result
+            ```
+            ${{ steps.apply.outputs.stdout }}
+            ```
+
