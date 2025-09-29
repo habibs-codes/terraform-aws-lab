@@ -21,7 +21,11 @@ jobs:
         with:
           terraform_version: 1.9.7
 
+<<<<<<< HEAD
       # Step 3: Configure AWS credentials (environment vars)
+=======
+      # Step 3: Configure AWS credentials
+>>>>>>> 484e0357543d6d7ab46bb3d9d716e2f062e2eed2
       - name: Set AWS Credentials
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
